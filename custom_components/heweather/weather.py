@@ -128,8 +128,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
         data = WeatherData(hass, longitude, latitude, host, heweather_cert=heweather_cert, jwt_sub=jwt_sub, jwt_kid=jwt_kid)
 
     weather = HeWeather(data, longitude, latitude)
-    await weather.async_update_data(dt_util.now())
-    async_track_time_interval(hass, weather.async_update_data, TIME_BETWEEN_UPDATES, cancel_on_shutdown=True)
+    async_track_time_interval(hass, weather.async_update, TIME_BETWEEN_UPDATES, cancel_on_shutdown=True)
 
     async_add_entities([weather], True)
 
@@ -144,8 +143,7 @@ async def async_setup_platform(hass, config, async_add_devices, discovery_info=N
     key = config.get(CONF_KEY)
     data = WeatherData(hass, longitude, latitude, host, key=key)
     weather = HeWeather(data, longitude, latitude)
-    await weather.async_update_data(dt_util.now())
-    async_track_time_interval(hass, weather.async_update_data, TIME_BETWEEN_UPDATES, cancel_on_shutdown=True)
+    async_track_time_interval(hass, weather.async_update, TIME_BETWEEN_UPDATES, cancel_on_shutdown=True)
 
     async_add_devices([weather], True)
 
@@ -194,7 +192,7 @@ class HeWeather(WeatherEntity):
     @property
     def should_poll(self):
         """attention No polling needed for a demo weather condition."""
-        return True
+        return False
 
 
 
@@ -327,6 +325,8 @@ class HeWeather(WeatherEntity):
     #@asyncio.coroutine
     async def async_update(self, now=DEFAULT_TIME):
         """update函数变成了async_update."""
+        await self.async_update_data(dt_util.now())
+        
         self._updatetime = self._data.updatetime
         #self._name = self._data.name
         self._condition = self._data.condition
